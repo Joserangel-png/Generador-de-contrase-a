@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro y Generador de Contraseñas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+    <div id="formContainer" class="w-full max-w-md p-6 bg-gray-800 rounded-lg shadow-lg">
+        <h1 class="text-xl font-bold text-center mb-4">Registro de Usuario</h1>
+        
+        <label class="block mb-2">Nombre:</label>
+        <input id="nombre" type="text" class="w-full p-2 mb-2 rounded bg-gray-700 text-white">
+        
+        <label class="block mb-2">Apellidos:</label>
+        <input id="apellidos" type="text" class="w-full p-2 mb-2 rounded bg-gray-700 text-white">
+        
+        <label class="block mb-2">Dirección:</label>
+        <input id="direccion" type="text" class="w-full p-2 mb-2 rounded bg-gray-700 text-white">
+        
+        <label class="block mb-2">Municipio:</label>
+        <input id="municipio" type="text" class="w-full p-2 mb-2 rounded bg-gray-700 text-white">
+        
+        <label class="block mb-2">Cargo:</label>
+        <input id="cargo" type="text" class="w-full p-2 mb-2 rounded bg-gray-700 text-white">
+        
+        <label class="block mb-2">Sección Electoral:</label>
+        <input id="seccion" type="text" class="w-full p-2 mb-4 rounded bg-gray-700 text-white">
+        
+        <button id="generate" class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded">Generar Usuario y Contraseña</button>
+        
+        <div class="mt-4 p-2 bg-gray-700 rounded">
+            <p><strong>Usuario:</strong> <span id="username">----</span></p>
+            <p><strong>Contraseña:</strong> <span id="password">********</span></p>
+        </div>
+        
+        <div class="mt-4 flex justify-between">
+            <button id="accept" class="p-2 bg-green-600 hover:bg-green-700 rounded">Aceptar</button>
+            <button id="retry" class="p-2 bg-red-600 hover:bg-red-700 rounded">Reintentar</button>
+        </div>
+    </div>
+    
+    <div id="dataContainer" class="hidden w-full max-w-2xl p-6 bg-gray-800 rounded-lg shadow-lg">
+        <h1 class="text-xl font-bold text-center mb-4">Base de Datos</h1>
+        <table class="w-full text-sm text-left text-gray-400">
+            <thead class="text-xs uppercase bg-gray-700 text-gray-300">
+                <tr>
+                    <th class="px-4 py-2">Fecha</th>
+                    <th class="px-4 py-2">Hora</th>
+                    <th class="px-4 py-2">Nombre y Apellidos</th>
+                    <th class="px-4 py-2">Usuario</th>
+                    <th class="px-4 py-2">Contraseña</th>
+                </tr>
+            </thead>
+            <tbody id="dataList"></tbody>
+        </table>
+    </div>
+    
+    <script>
+        const nombre = document.getElementById("nombre");
+        const apellidos = document.getElementById("apellidos");
+        const direccion = document.getElementById("direccion");
+        const municipio = document.getElementById("municipio");
+        const cargo = document.getElementById("cargo");
+        const seccion = document.getElementById("seccion");
+        const generateBtn = document.getElementById("generate");
+        const acceptBtn = document.getElementById("accept");
+        const retryBtn = document.getElementById("retry");
+        const usernameField = document.getElementById("username");
+        const passwordField = document.getElementById("password");
+        const formContainer = document.getElementById("formContainer");
+        const dataContainer = document.getElementById("dataContainer");
+        const dataList = document.getElementById("dataList");
+        
+        function generateCredentials() {
+            if (!nombre.value || !apellidos.value || !direccion.value || !municipio.value || !cargo.value || !seccion.value) {
+                alert("Por favor, completa todos los campos.");
+                return;
+            }
+            
+            let username = nombre.value.toLowerCase().charAt(0) + apellidos.value.toLowerCase().split(" ").join("") + seccion.value;
+            let password = Math.random().toString(36).slice(-8);
+            
+            usernameField.textContent = username;
+            passwordField.textContent = password;
+        }
+        
+        function saveData() {
+            let now = new Date();
+            let userData = {
+                fecha: now.toLocaleDateString(),
+                hora: now.toLocaleTimeString(),
+                nombre: nombre.value,
+                apellidos: apellidos.value,
+                usuario: usernameField.textContent,
+                contraseña: passwordField.textContent
+            };
+            
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            users.push(userData);
+            localStorage.setItem("users", JSON.stringify(users));
+            
+            showDatabase();
+        }
+        
+        function showDatabase() {
+            formContainer.classList.add("hidden");
+            dataContainer.classList.remove("hidden");
+            dataList.innerHTML = "";
+            
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            users.forEach(user => {
+                let row = document.createElement("tr");
+                row.innerHTML = `
+                    <td class="px-4 py-2">${user.fecha}</td>
+                    <td class="px-4 py-2">${user.hora}</td>
+                    <td class="px-4 py-2">${user.nombre} ${user.apellidos}</td>
+                    <td class="px-4 py-2">${user.usuario}</td>
+                    <td class="px-4 py-2">${user.contraseña}</td>
+                `;
+                dataList.appendChild(row);
+            });
+        }
+        
+        function resetForm() {
+            nombre.value = "";
+            apellidos.value = "";
+            direccion.value = "";
+            municipio.value = "";
+            cargo.value = "";
+            seccion.value = "";
+            usernameField.textContent = "----";
+            passwordField.textContent = "********";
+        }
+        
+        generateBtn.addEventListener("click", generateCredentials);
+        acceptBtn.addEventListener("click", saveData);
+        retryBtn.addEventListener("click", resetForm);
+    </script>
+</body>
+</html>
